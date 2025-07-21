@@ -1,0 +1,14 @@
+<template>
+  <div>
+    <h1>Fəaliyyətlər</h1>
+    <p>Bağça:</p>
+    <ul>
+      <li>Sorğu:</li>
+      <li>Sorğu:</li>
+      <li>Sorğu:</li>
+    </ul>
+    <p>Yönləndirmə(2):</p>
+    <p>Yönləndirmə(3):</p>
+    <p>VVAQ:</p>
+  </div>
+</template>
