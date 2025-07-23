@@ -22,8 +22,7 @@ export const useVolunteerStore = defineStore("volunteers", () => {
   };
 
   const removeVolunteer = (id) => {
-    volunteers.value = volunteers.value.filter((vol) => vol.id !== id);
-    syncLocalStorage();
+    volunteers.value = volunteers.value.filter((v) => v.id !== id);
   };
 
   const clearVolunteers = () => {
@@ -40,5 +39,6 @@ export const useVolunteerStore = defineStore("volunteers", () => {
     count,
     addVolunteer,
     clearVolunteers,
+    removeVolunteer,
   };
 });
