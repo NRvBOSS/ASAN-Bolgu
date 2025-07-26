@@ -1,6 +1,6 @@
 export const activityLimits = {
-  Yön2: 2,
-  Yön3: 2,
+  Yön2: 1,
+  Yön3: 1,
   Sorğu: 3, // default
   VAQ: 2,
   Bağça: 1

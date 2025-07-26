@@ -208,6 +208,30 @@
                     >
                   </div>
                 </div>
+
+                <!-- Fasilə Timer -->
+                <div class="flex items-center gap-2">
+                  <button
+                    @click.stop="toggleBreakTimer(volunteer.id)"
+                    class="px-3 py-1 rounded-md text-sm font-medium transition-colors"
+                    :class="{
+                      'bg-asan-blue/10 text-asan-blue hover:bg-asan-blue/20':
+                        !activeTimers[volunteer.id]?.isRunning,
+                      'bg-asan-blue text-white hover:bg-asan-dark-blue':
+                        activeTimers[volunteer.id]?.isRunning,
+                      'bg-gray-200 text-gray-500 cursor-not-allowed':
+                        activeTimers[volunteer.id]?.remainingTime <= 0,
+                    }"
+                    :disabled="activeTimers[volunteer.id]?.remainingTime <= 0"
+                  >
+                    {{
+                      formatTimerTime(
+                        activeTimers[volunteer.id]?.remainingTime || 1200
+                      )
+                    }}
+                  </button>
+                </div>
+
                 <button
                   @click.stop="removeVolunteer(volunteer.id)"
                   class="text-gray-400 hover:text-red-500 transition-colors p-1"
@@ -257,6 +281,53 @@ const {
   clearVolunteers,
 } = volunteerStore;
 
+// Könüllülərin fasilə vaxtını idarə etmək
+const activeTimers = ref({});
+
+const formatTimerTime = (seconds) => {
+  const mins = Math.floor(seconds / 60)
+    .toString()
+    .padStart(2, "0");
+  const secs = (seconds % 60).toString().padStart(2, "0");
+  return `${mins}:${secs}`;
+};
+
+const toggleBreakTimer = (volunteerId) => {
+  if (!activeTimers.value[volunteerId]) {
+    activeTimers.value[volunteerId] = {
+      remainingTime: 1200, // 20 minutes in seconds
+      isRunning: false,
+      interval: null,
+    };
+  }
+
+  const timer = activeTimers.value[volunteerId];
+
+  if (timer.isRunning) {
+    clearInterval(timer.interval);
+    timer.isRunning = false;
+  } else {
+    if (timer.remainingTime <= 0) {
+      timer.remainingTime = 1200; // Reset if expired
+    }
+    timer.isRunning = true;
+    timer.interval = setInterval(() => {
+      timer.remainingTime--;
+      if (timer.remainingTime <= 0) {
+        clearInterval(timer.interval);
+        timer.isRunning = false;
+      }
+    }, 1000);
+  }
+};
+
+// Cleanup intervals when component unmounts
+onBeforeUnmount(() => {
+  Object.values(activeTimers.value).forEach((timer) => {
+    if (timer.interval) clearInterval(timer.interval);
+  });
+});
+
 // Zamanı idarə etmə
 const currentTime = ref(new Date().toLocaleTimeString());
 let timer = null;
@@ -265,10 +336,6 @@ onMounted(() => {
   timer = setInterval(() => {
     currentTime.value = new Date().toLocaleTimeString();
   }, 1000);
-});
-
-onBeforeUnmount(() => {
-  clearInterval(timer);
 });
 
 // Könüllü məlumatları
@@ -326,7 +393,7 @@ const formatDate = (date) => {
   background-color: #2196f3;
 }
 .bg-asan-dark-blue {
-  background-color: #11569a;
+  background-color: #1976d2;
 }
 .bg-asan-darker-blue {
   background-color: #0d47a1;
@@ -367,5 +434,13 @@ const formatDate = (date) => {
 }
 .bg-gray-50 {
   background-color: #f9fafb;
+}
+
+/* Fasilə timer üçün əlavə stillər */
+.bg-asan-blue\/10 {
+  background-color: rgba(33, 150, 243, 0.1);
+}
+.bg-asan-blue\/20 {
+  background-color: rgba(33, 150, 243, 0.2);
 }
 </style>
