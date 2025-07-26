@@ -17,87 +17,6 @@
     </div>
 
     <div class="space-y-6">
-      <!-- Bağça -->
-      <div class="border border-gray-200 rounded-xl overflow-hidden shadow-xs">
-        <div
-          class="bg-gradient-to-r from-asan-blue to-asan-dark-blue text-white p-4 flex items-center"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6 mr-3"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
-            />
-          </svg>
-          <span class="font-semibold text-lg">BAĞÇA</span>
-        </div>
-        <div class="p-4 bg-gray-50">
-          <div v-if="assignedVolunteers.Bağça" class="text-gray-700">
-            {{ assignedVolunteers.Bağça }}
-          </div>
-          <div v-else class="text-gray-400">Heç kim təyin edilməyib</div>
-        </div>
-      </div>
-
-      <!-- Sorğu bölməsi -->
-      <div class="border border-gray-200 rounded-xl overflow-hidden shadow-xs">
-        <div class="bg-gray-50 p-4 flex items-center border-b border-gray-200">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6 mr-3 text-asan-blue"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-            />
-          </svg>
-          <span class="font-semibold text-lg text-asan-dark-blue">SORĞU</span>
-        </div>
-
-        <div class="divide-y divide-gray-200">
-          <div
-            v-for="(sorgu, index) in 3"
-            :key="index"
-            class="p-4 hover:bg-gray-50 transition-colors duration-150 flex items-center group"
-          >
-            <div class="flex items-center w-full">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5 mr-4 text-asan-blue"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-              <span class="text-gray-700 group-hover:text-asan-dark-blue"
-                >Sorğu {{ index + 1 }}</span
-              >
-              <span class="ml-auto text-gray-700">
-                {{ assignedVolunteers.Sorğu?.[index] || "" }}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Digər fəaliyyətlər -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <ActivityCard
@@ -120,7 +39,7 @@ import { canBeAssigned, isLastStanding, shuffle } from "@/utils/assignment";
 import { ref } from "vue";
 
 const store = useVolunteerStore();
-const childCount = 5; // gündəlik uşaq sayı (dinamik ola bilər)
+const childCount = 5;
 const assignedVolunteers = ref({
   Bağça: null,
   Sorğu: [],
@@ -129,8 +48,82 @@ const assignedVolunteers = ref({
   VAQ: [],
   Masa: [],
 });
+
+// Fəaliyyət növləri
+const SITTING_ACTIVITIES = ["Bağça", "VAQ", "Masa"];
+const STANDING_ACTIVITIES = ["Sorğu", "Yön2", "Yön3"];
+
+// Son fəaliyyətin növünü yoxla
+function getLastActivityType(volunteer) {
+  if (!volunteer.history || volunteer.history.length === 0) return null;
+  const lastActivity = volunteer.history[volunteer.history.length - 1];
+
+  if (SITTING_ACTIVITIES.includes(lastActivity)) return "sitting";
+  if (STANDING_ACTIVITIES.includes(lastActivity)) return "standing";
+  return null;
+}
+
+// Könüllünün bu fəaliyyətə gedə biləcəyini yoxla
+function canGoToActivity(volunteer, activity, assignedNames) {
+  // Artıq təyin edilmişdirse
+  if (assignedNames.has(volunteer.name)) return false;
+
+  // Bağça yalnız qızlar üçün
+  if (activity === "Bağça" && volunteer.gender !== "Qadın") return false;
+
+  // Əsas yoxlamalar - VAQ və Bağça üçün daha yumşaq yoxlama
+  if (activity !== "VAQ" && activity !== "Bağça") {
+    if (!canBeAssigned(volunteer, activity, childCount)) return false;
+    if (isLastStanding(volunteer)) return false;
+  }
+
+  // Fəaliyyət növü qaydası - yalnız Masa olmayan oturaqlı fəaliyyətlər üçün
+  const lastType = getLastActivityType(volunteer);
+
+  if (
+    lastType === "sitting" &&
+    SITTING_ACTIVITIES.includes(activity) &&
+    activity !== "Masa"
+  ) {
+    // Bağça və VAQ üçün daha çevik qayda
+    if (activity === "Bağça" || activity === "VAQ") {
+      // Əgər son 2 fəaliyyətdə bu fəaliyyəti etməyibsə, icazə ver
+      const lastTwo = volunteer.history.slice(-2);
+      if (!lastTwo.includes(activity)) {
+        console.log(
+          `${volunteer.name} üçün ${activity} icazə verildi (son 2-də yoxdur)`
+        );
+        return true;
+      }
+    }
+    return false; // digər oturaqlı fəaliyyətlər üçün qadağa
+  }
+
+  // Masa üçün bütün yoxlamalar keçilsin
+  if (activity === "Masa") return true;
+
+  // Son 2 dəfə eyni fəaliyyəti etməməli (Masa istisna)
+  if (activity !== "Masa") {
+    const lastTwo = volunteer.history.slice(-2);
+    if (lastTwo.includes(activity)) return false;
+  }
+
+  // Bağça üçün son 3 dəfə yoxla - daha yumşaq
+  if (activity === "Bağça") {
+    const lastThree = volunteer.history.slice(-3);
+    if (lastThree.includes("Bağça")) {
+      console.log(
+        `${volunteer.name} son 3-də Bağça etdiyi üçün qəbul edilmədi`
+      );
+      return false;
+    }
+  }
+
+  return true;
+}
+
 function assignActivities() {
-  // Reset assignments
+  // Sıfırla
   assignedVolunteers.value = {
     Bağça: null,
     Sorğu: [],
@@ -141,85 +134,141 @@ function assignActivities() {
   };
 
   const validVolunteers = store.volunteers.filter(
-    (v) => v && v.name && Array.isArray(v.history)
+    (v) => v?.name && Array.isArray(v.history)
   );
-  if (validVolunteers.length === 0) return;
 
-  // Bağça (yalnız qadınlar)
-  const girls = validVolunteers.filter(
-    (v) => v.gender === "Qadın" && canBeAssigned(v, "Bağça", childCount)
-  );
-  const girl = shuffle(girls).find((v) => !isLastStanding(v));
-  if (girl) {
-    store.assignActivity(girl.name, "Bağça");
-    assignedVolunteers.value.Bağça = girl.name;
+  if (validVolunteers.length === 0) {
+    alert("Əlavə edilmiş könüllü yoxdur!");
+    return;
   }
 
-  // Yön2 və Yön3
-  ["Yön2", "Yön3"].forEach((activity) => {
-    const eligible = validVolunteers.filter(
-      (v) =>
-        v.name !== assignedVolunteers.value.Bağça &&
-        canBeAssigned(v, activity, childCount) &&
-        !isLastStanding(v)
-    );
-    const pick = shuffle(eligible)[0];
-    if (pick) {
-      store.assignActivity(pick.name, activity);
-      assignedVolunteers.value[activity].push(pick.name);
-    }
-  });
+  const assignedNames = new Set();
 
-  // Sorğu (3 nəfər)
-  const sorğuLimit = childCount < 10 ? 3 : 2;
-  const assignedNames = Object.values(assignedVolunteers.value)
-    .flat()
-    .filter(Boolean);
-  const eligibleSorğu = validVolunteers.filter(
-    (v) =>
-      !assignedNames.includes(v.name) && canBeAssigned(v, "Sorğu", childCount)
+  // 1. BAĞÇA - 1 qız
+  console.log("=== BAĞÇA təyinatı ===");
+  const eligibleForBagca = validVolunteers.filter((v) =>
+    canGoToActivity(v, "Bağça", assignedNames)
   );
-  const sorğuPicks = shuffle(eligibleSorğu).slice(0, sorğuLimit);
-  sorğuPicks.forEach((v) => {
-    store.assignActivity(v.name, "Sorğu");
-    assignedVolunteers.value.Sorğu.push(v.name);
-  });
-
-  // VAQ (2 nəfər)
-  const currentAssigned = [...assignedNames, ...assignedVolunteers.value.Sorğu];
-  const eligibleVAQ = validVolunteers.filter(
-    (v) =>
-      !currentAssigned.includes(v.name) && canBeAssigned(v, "VAQ", childCount)
-  );
-  const vaqPicks = shuffle(eligibleVAQ).slice(0, 2);
-  vaqPicks.forEach((v) => {
-    store.assignActivity(v.name, "VAQ");
-    assignedVolunteers.value.VAQ.push(v.name);
-  });
-
-  // Masa (qalanlar)
-  const allAssignedNames = [
-    assignedVolunteers.value.Bağça,
-    ...assignedVolunteers.value.Sorğu,
-    ...assignedVolunteers.value.Yön2,
-    ...assignedVolunteers.value.Yön3,
-    ...assignedVolunteers.value.VAQ,
-  ].filter(Boolean);
-
-  const remainingVolunteers = validVolunteers.filter(
-    (v) => !allAssignedNames.includes(v.name)
+  console.log(
+    "Bağça üçün uyğun:",
+    eligibleForBagca.map((v) => v.name)
   );
 
-  remainingVolunteers.forEach((v) => {
-    store.assignActivity(v.name, "Masa");
-    if (!Array.isArray(assignedVolunteers.value.Masa)) {
-      assignedVolunteers.value.Masa = [];
-    }
-    assignedVolunteers.value.Masa.push(v.name);
+  if (eligibleForBagca.length > 0) {
+    const selected = shuffle(eligibleForBagca)[0];
+    store.assignActivity(selected.name, "Bağça");
+    assignedVolunteers.value.Bağça = selected.name;
+    assignedNames.add(selected.name);
+    console.log("Bağçaya təyin edildi:", selected.name);
+  }
+
+  // 2. YÖN2 - 1 nəfər
+  console.log("=== YÖN2 təyinatı ===");
+  const eligibleForYon2 = validVolunteers.filter((v) =>
+    canGoToActivity(v, "Yön2", assignedNames)
+  );
+  console.log(
+    "Yön2 üçün uyğun:",
+    eligibleForYon2.map((v) => v.name)
+  );
+
+  if (eligibleForYon2.length > 0) {
+    const selected = shuffle(eligibleForYon2)[0];
+    store.assignActivity(selected.name, "Yön2");
+    assignedVolunteers.value.Yön2.push(selected.name);
+    assignedNames.add(selected.name);
+    console.log("Yön2-yə təyin edildi:", selected.name);
+  }
+
+  // 3. YÖN3 - 1 nəfər
+  console.log("=== YÖN3 təyinatı ===");
+  const eligibleForYon3 = validVolunteers.filter((v) =>
+    canGoToActivity(v, "Yön3", assignedNames)
+  );
+  console.log(
+    "Yön3 üçün uyğun:",
+    eligibleForYon3.map((v) => v.name)
+  );
+
+  if (eligibleForYon3.length > 0) {
+    const selected = shuffle(eligibleForYon3)[0];
+    store.assignActivity(selected.name, "Yön3");
+    assignedVolunteers.value.Yön3.push(selected.name);
+    assignedNames.add(selected.name);
+    console.log("Yön3-ə təyin edildi:", selected.name);
+  }
+
+  // 4. VAQ - 1 nəfər
+  console.log("=== VAQ təyinatı ===");
+  const eligibleForVAQ = validVolunteers.filter((v) =>
+    canGoToActivity(v, "VAQ", assignedNames)
+  );
+  console.log(
+    "VAQ üçün uyğun:",
+    eligibleForVAQ.map((v) => v.name)
+  );
+
+  if (eligibleForVAQ.length > 0) {
+    const selected = shuffle(eligibleForVAQ)[0];
+    store.assignActivity(selected.name, "VAQ");
+    assignedVolunteers.value.VAQ.push(selected.name);
+    assignedNames.add(selected.name);
+    console.log("VAQ-a təyin edildi:", selected.name);
+  }
+
+  // 5. SORĞU - 3 nəfər (uşaq sayına görə)
+  console.log("=== SORĞU təyinatı ===");
+  const sorguCount = childCount < 10 ? 3 : 2;
+  const eligibleForSorgu = validVolunteers.filter((v) =>
+    canGoToActivity(v, "Sorğu", assignedNames)
+  );
+  console.log(
+    "Sorğu üçün uyğun:",
+    eligibleForSorgu.map((v) => v.name)
+  );
+
+  const sorguSelections = shuffle(eligibleForSorgu).slice(0, sorguCount);
+  sorguSelections.forEach((selected) => {
+    store.assignActivity(selected.name, "Sorğu");
+    assignedVolunteers.value.Sorğu.push(selected.name);
+    assignedNames.add(selected.name);
+    console.log("Sorğuya təyin edildi:", selected.name);
   });
+
+  // 6. MASA - qalanlar
+  console.log("=== MASA təyinatı ===");
+  const remainingForMasa = validVolunteers.filter(
+    (v) => !assignedNames.has(v.name)
+  );
+  console.log(
+    "Masa üçün qalanlar:",
+    remainingForMasa.map((v) => v.name)
+  );
+
+  remainingForMasa.forEach((selected) => {
+    store.assignActivity(selected.name, "Masa");
+    assignedVolunteers.value.Masa.push(selected.name);
+    assignedNames.add(selected.name);
+    console.log("Masaya təyin edildi:", selected.name);
+  });
+
+  console.log("=== SON NƏTİCƏ ===");
+  console.log("Final assignments:", assignedVolunteers.value);
+  console.log(
+    "Cəmi təyin edilən:",
+    assignedNames.size,
+    "Cəmi könüllü:",
+    validVolunteers.length
+  );
 }
 
 const activities = [
+  {
+    title: "Bağça",
+    icon: "M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4",
+    color: "text-asan-blue",
+    key: "Bağça",
+  },
   {
     title: "Yönləndirmə(2)",
     icon: "M9 5l7 7-7 7",
@@ -237,6 +286,12 @@ const activities = [
     icon: "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6",
     color: "text-asan-blue",
     key: "VAQ",
+  },
+  {
+    title: "Sorğu",
+    icon: "M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z",
+    color: "text-asan-blue",
+    key: "Sorğu",
   },
   {
     title: "Masa",
