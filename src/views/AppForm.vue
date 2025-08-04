@@ -46,7 +46,7 @@
                     v-model="newVolunteer.gender"
                     type="radio"
                     value="Kişi"
-                    class="h-4 w-4 text-asan-blue focus:ring-asan-blue border-gray-300"
+                    class="h-4 w-4 text-asan-blue focus:ring-asan-blue border-gray-300 cursor-pointer"
                   />
                   <span class="ml-2 text-gray-700">Kişi</span>
                 </label>
@@ -55,7 +55,7 @@
                     v-model="newVolunteer.gender"
                     type="radio"
                     value="Qadın"
-                    class="h-4 w-4 text-asan-blue focus:ring-asan-blue border-gray-300"
+                    class="h-4 w-4 text-asan-blue focus:ring-asan-blue border-gray-300 cursor-pointer"
                   />
                   <span class="ml-2 text-gray-700">Qadın</span>
                 </label>
@@ -66,7 +66,7 @@
               <div class="grid grid-cols-2 gap-4">
                 <button
                   @click="addVolunteer"
-                  class="w-full bg-asan-blue hover:bg-asan-dark-blue text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 shadow hover:shadow-md flex items-center justify-center"
+                  class="w-full bg-asan-blue hover:bg-asan-dark-blue text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 shadow hover:shadow-md flex items-center justify-center cursor-pointer"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -87,7 +87,7 @@
 
                 <button
                   @click="clearAll"
-                  class="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 shadow hover:shadow-md flex items-center justify-center"
+                  class="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 shadow hover:shadow-md flex items-center justify-center cursor-pointer"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
