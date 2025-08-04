@@ -43,9 +43,9 @@ const childCount = 5;
 const assignedVolunteers = ref({
   Bağça: null,
   Sorğu: [],
-  Yön2: [],
-  Yön3: [],
-  VAQ: [],
+  Yön2: null,
+  Yön3: null,
+  VAQ: null,
   Masa: [],
 });
 
@@ -175,7 +175,7 @@ function assignActivities() {
   if (eligibleForYon2.length > 0) {
     const selected = shuffle(eligibleForYon2)[0];
     store.assignActivity(selected.name, "Yön2");
-    assignedVolunteers.value.Yön2.push(selected.name);
+    assignedVolunteers.value.Yön2 = selected.name;
     assignedNames.add(selected.name);
     console.log("Yön2-yə təyin edildi:", selected.name);
   }
@@ -193,7 +193,7 @@ function assignActivities() {
   if (eligibleForYon3.length > 0) {
     const selected = shuffle(eligibleForYon3)[0];
     store.assignActivity(selected.name, "Yön3");
-    assignedVolunteers.value.Yön3.push(selected.name);
+    assignedVolunteers.value.Yön3 = selected.name;
     assignedNames.add(selected.name);
     console.log("Yön3-ə təyin edildi:", selected.name);
   }
@@ -211,17 +211,21 @@ function assignActivities() {
   if (eligibleForVAQ.length > 0) {
     const selected = shuffle(eligibleForVAQ)[0];
     store.assignActivity(selected.name, "VAQ");
-    assignedVolunteers.value.VAQ.push(selected.name);
+    assignedVolunteers.value.VAQ = selected.name;
     assignedNames.add(selected.name);
     console.log("VAQ-a təyin edildi:", selected.name);
   }
 
   // 5. SORĞU - 3 nəfər (uşaq sayına görə)
   console.log("=== SORĞU təyinatı ===");
-  const sorguCount = childCount < 10 ? 3 : 2;
-  const eligibleForSorgu = validVolunteers.filter((v) =>
-    canGoToActivity(v, "Sorğu", assignedNames)
-  );
+  const sorguCount = 3;
+  const eligibleForSorgu = validVolunteers.filter((v) => {
+    if (!canGoToActivity(v, "Sorğu", assignedNames)) return false;
+
+    // Son 2 fəaliyyətdə Sorğu etməməli
+    const lastTwo = v.history.slice(-2);
+    return !lastTwo.includes("Sorğu");
+  });
   console.log(
     "Sorğu üçün uyğun:",
     eligibleForSorgu.map((v) => v.name)

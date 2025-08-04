@@ -1,8 +1,7 @@
 <script setup>
-import AppForm from './views/AppForm.vue';
-
+import AppForm from "./views/AppForm.vue";
 </script>
 
 <template>
-  <AppForm/>
+  <AppForm />
 </template>
