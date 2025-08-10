@@ -4,6 +4,7 @@ import AppChoose from "../views/AppChoose.vue";
 import AppAdmin from "../views/AppAdmin.vue";
 import AppAssignments from "../views/AppAssignments.vue";
 import AppPin from "../views/AppPin.vue";
+import AppHistory from "../views/AppHistory.vue";
 
 const router = createRouter({
   history: createWebHistory(),
@@ -31,6 +32,10 @@ const router = createRouter({
     {
       path: "/pin",
       component: AppPin,
+    },
+    {
+      path: "/history",
+      component: AppHistory,
     },
   ],
 });
