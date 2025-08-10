@@ -10,7 +10,7 @@
     </router-link>
 
     <router-link
-      to="/admin"
+      to="/pin"
       class="w-full max-w-md bg-blue-500 hover:bg-blue-700 text-white text-center font-bold py-6 px-8 rounded-xl shadow-lg transition-all duration-200 text-xl"
     >
       Admin Panel
