@@ -1,7 +1,7 @@
 <script setup>
-import AppForm from "./views/AppForm.vue";
+import AppHeader from "./views/AppHeader.vue";
 </script>
 
 <template>
-  <AppForm />
+  <AppHeader />
 </template>
