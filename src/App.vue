@@ -4,4 +4,5 @@ import AppHeader from "./views/AppHeader.vue";
 
 <template>
   <AppHeader />
+  <RouterView />
 </template>

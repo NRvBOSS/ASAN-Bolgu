@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col min-h-screen bg-gray-50">
+  <div class="flex flex-col absolute w-full bg-gray-50">
     <!-- Başlıq və saat hissəsi -->
     <div
       class="bg-gradient-to-r from-asan-blue to-asan-dark-blue text-white py-4 shadow-md"
@@ -24,7 +24,6 @@ onMounted(() => {
   }, 1000);
 });
 </script>
-
 <style>
 /* ASAN rəng palitrası */
 .bg-asan-blue {
