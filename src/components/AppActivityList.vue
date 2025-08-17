@@ -67,6 +67,10 @@
       </div>
     </div>
 
+    <div>
+      <button @click="saveHistory">Təsdiqlə</button>
+    </div>
+
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <div
         v-for="(timeSlot, timeIndex) in timeSlots"
@@ -384,8 +388,23 @@ const timeSlots = computed(() => {
   return slots;
 });
 
-const showHistory = () => {
-  console.log("Tarixçə button clicked");
+const assignments = ref([]);
+const saveHistory = async () => {
+  try {
+    const response = await axios.post(
+      "http://localhost:4000/api/history/save",
+
+      {
+        date: new Date(), // indiki vaxt
+        assignments: assignments.value,
+      }
+    );
+    console.log("Uğurla saxlanıldı:", response.data);
+    alert("Tarixçə saxlanıldı ✅");
+  } catch (err) {
+    console.error("Xəta oldu:", err);
+    alert("Xəta baş verdi ❌");
+  }
 };
 </script>
 
