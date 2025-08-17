@@ -2,9 +2,9 @@ import { createRouter, createWebHistory } from "vue-router";
 import AppLogin from "../views/AppLogin.vue";
 import AppChoose from "../views/AppChoose.vue";
 import AppAdmin from "../views/AppAdmin.vue";
-import AppAssignments from "../views/AppAssignments.vue";
 import AppPin from "../views/AppPin.vue";
 import AppHistory from "../views/AppHistory.vue";
+import AppActivityList from "@/components/AppActivityList.vue";
 
 const router = createRouter({
   history: createWebHistory(),
@@ -27,7 +27,7 @@ const router = createRouter({
     },
     {
       path: "/assignments",
-      component: AppAssignments,
+      component: AppActivityList,
     },
     {
       path: "/pin",
