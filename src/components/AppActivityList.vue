@@ -22,7 +22,7 @@
       </h2>
       <div class="flex gap-4">
         <button
-          @click="splitVolunteers"
+          @click="fetchAndDistributeVolunteers"
           class="cursor-pointer flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-5 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
         >
           <svg
@@ -69,8 +69,8 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <div
-        v-for="(timeSlot, index) in timeSlots"
-        :key="index"
+        v-for="(timeSlot, timeIndex) in timeSlots"
+        :key="timeIndex"
         class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-all duration-200 hover:border-blue-300"
       >
         <div
@@ -118,13 +118,15 @@
                 <p class="text-sm text-gray-500">Könüllü: 1 nəfər</p>
               </div>
             </div>
-            <div v-if="volunteers.bagca" class="mt-2 ml-10">
-              <div
-                v-for="(volunteer, idx) in volunteers.bagca.slice(0, 1)"
-                :key="idx"
-                class="text-sm text-gray-700"
-              >
-                {{ volunteer.name }}
+            <div
+              v-if="distributedVolunteers.bagca[timeIndex]"
+              class="mt-2 ml-10"
+            >
+              <div class="text-sm text-gray-700">
+                {{
+                  distributedVolunteers.bagca[timeIndex][0]?.name ||
+                  "Təyin edilməyib"
+                }}
               </div>
             </div>
           </div>
@@ -153,13 +155,18 @@
                 <p class="text-sm text-gray-500">Könüllü: 3 nəfər</p>
               </div>
             </div>
-            <div v-if="volunteers.sorgu" class="mt-2 ml-10">
+            <div
+              v-if="distributedVolunteers.sorgu[timeIndex]"
+              class="mt-2 ml-10"
+            >
               <div
-                v-for="(volunteer, idx) in volunteers.sorgu.slice(0, 3)"
+                v-for="(volunteer, idx) in distributedVolunteers.sorgu[
+                  timeIndex
+                ]"
                 :key="idx"
                 class="text-sm text-gray-700"
               >
-                {{ volunteer.name }}
+                {{ volunteer?.name || "Təyin edilməyib" }}
               </div>
             </div>
           </div>
@@ -188,13 +195,18 @@
                 <p class="text-sm text-gray-500">Könüllü: 2 nəfər</p>
               </div>
             </div>
-            <div v-if="volunteers.yon2" class="mt-2 ml-10">
+            <div
+              v-if="distributedVolunteers.yon2[timeIndex]"
+              class="mt-2 ml-10"
+            >
               <div
-                v-for="(volunteer, idx) in volunteers.yon2.slice(0, 2)"
+                v-for="(volunteer, idx) in distributedVolunteers.yon2[
+                  timeIndex
+                ]"
                 :key="idx"
                 class="text-sm text-gray-700"
               >
-                {{ volunteer.name }}
+                {{ volunteer?.name || "Təyin edilməyib" }}
               </div>
             </div>
           </div>
@@ -223,13 +235,18 @@
                 <p class="text-sm text-gray-500">Könüllü: 2 nəfər</p>
               </div>
             </div>
-            <div v-if="volunteers.yon3" class="mt-2 ml-10">
+            <div
+              v-if="distributedVolunteers.yon3[timeIndex]"
+              class="mt-2 ml-10"
+            >
               <div
-                v-for="(volunteer, idx) in volunteers.yon3.slice(0, 2)"
+                v-for="(volunteer, idx) in distributedVolunteers.yon3[
+                  timeIndex
+                ]"
                 :key="idx"
                 class="text-sm text-gray-700"
               >
-                {{ volunteer.name }}
+                {{ volunteer?.name || "Təyin edilməyib" }}
               </div>
             </div>
           </div>
@@ -258,13 +275,18 @@
                 <p class="text-sm text-gray-500">Könüllü: 2 nəfər</p>
               </div>
             </div>
-            <div v-if="volunteers.vvaq" class="mt-2 ml-10">
+            <div
+              v-if="distributedVolunteers.vvaq[timeIndex]"
+              class="mt-2 ml-10"
+            >
               <div
-                v-for="(volunteer, idx) in volunteers.vvaq.slice(0, 2)"
+                v-for="(volunteer, idx) in distributedVolunteers.vvaq[
+                  timeIndex
+                ]"
                 :key="idx"
                 class="text-sm text-gray-700"
               >
-                {{ volunteer.name }}
+                {{ volunteer?.name || "Təyin edilməyib" }}
               </div>
             </div>
           </div>
@@ -278,7 +300,7 @@
 import { ref, computed } from "vue";
 import axios from "axios";
 
-const volunteers = ref({
+const distributedVolunteers = ref({
   bagca: [],
   sorgu: [],
   yon2: [],
@@ -286,22 +308,53 @@ const volunteers = ref({
   vvaq: [],
 });
 
-const splitVolunteers = async () => {
+const fetchAndDistributeVolunteers = async () => {
   try {
     const response = await axios.get(
       "http://localhost:4000/api/distribute/distVols"
     );
-    volunteers.value = {
-      bagca: response.data.activities.bagca?.volunteers || [],
-      sorgu: response.data.activities.sorgu?.volunteers || [],
-      yon2: response.data.activities.yon2?.volunteers || [],
-      yon3: response.data.activities.yon3?.volunteers || [],
-      vvaq: response.data.activities.vvaq?.volunteers || [],
+    const activities = response.data.activities;
+
+    // Initialize arrays for each activity
+    distributedVolunteers.value = {
+      bagca: distributeSequentially(activities.bagca?.volunteers || [], 1),
+      sorgu: distributeSequentially(activities.sorgu?.volunteers || [], 3),
+      yon2: distributeSequentially(activities.yon2?.volunteers || [], 2),
+      yon3: distributeSequentially(activities.yon3?.volunteers || [], 2),
+      vvaq: distributeSequentially(activities.vvaq?.volunteers || [], 2),
     };
-    console.log("Volunteers fetched successfully:", volunteers.value);
+
+    console.log("Distributed volunteers:", distributedVolunteers.value);
   } catch (error) {
-    console.error("Error fetching volunteers:", error);
+    console.error("Error fetching and distributing volunteers:", error);
   }
+};
+
+const distributeSequentially = (volunteers, perSlot) => {
+  const slotsCount = timeSlots.value.length;
+  const distributed = Array(slotsCount)
+    .fill()
+    .map(() => []);
+
+  let volunteerIndex = 0;
+
+  for (let i = 0; i < slotsCount; i++) {
+    for (let j = 0; j < perSlot; j++) {
+      if (volunteerIndex < volunteers.length) {
+        distributed[i].push(volunteers[volunteerIndex]);
+        volunteerIndex++;
+      } else {
+        // If we run out of volunteers, start from beginning
+        volunteerIndex = 0;
+        if (volunteers.length > 0) {
+          distributed[i].push(volunteers[volunteerIndex]);
+          volunteerIndex++;
+        }
+      }
+    }
+  }
+
+  return distributed;
 };
 
 const getDay = new Date().getDay();
