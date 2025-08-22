@@ -34,7 +34,7 @@
                 <input
                   v-model="formData.gender"
                   type="radio"
-                  value="male"
+                  value="kişi"
                   name="gender"
                   required
                   class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
@@ -45,7 +45,7 @@
                 <input
                   v-model="formData.gender"
                   type="radio"
-                  value="female"
+                  value="qadın"
                   name="gender"
                   required
                   class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
@@ -53,6 +53,24 @@
                 <span class="ml-2 text-gray-700 font-bold"> Qadın</span>
               </label>
             </div>
+          </div>
+
+          <!-- Rol sahəsi -->
+          <div class="space-y-3">
+            <label class="block text-sm font-semibold text-gray-700">
+              Rol *
+            </label>
+            <select
+              v-model="formData.role"
+              required
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 outline-none"
+            >
+              <option value="" disabled selected>Rol seçin</option>
+              <option value="könüllü">Könüllü</option>
+              <option value="sorğu rəhbəri">Sorğu Rəhbəri</option>
+              <option value="qrup rəhbəri">Qrup Rəhbəri</option>
+              <option value="digər">Digər</option>
+            </select>
           </div>
 
           <!-- Növbə sahəsi -->
@@ -86,6 +104,26 @@
                 </div>
               </label>
             </div>
+          </div>
+
+          <!-- İstirahət günü sahəsi -->
+          <div class="space-y-3">
+            <label class="block text-sm font-semibold text-gray-700">
+              İstirahət Günü
+            </label>
+            <select
+              v-model="formData.rest"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 outline-none"
+            >
+              <option value="" selected>İstirahət günü seçin (optional)</option>
+              <option value="bazar ertəsi">Bazar ertəsi</option>
+              <option value="çərşənbə axşamı">Çərşənbə axşamı</option>
+              <option value="çərşənbə">Çərşənbə</option>
+              <option value="cümə axşamı">Cümə axşamı</option>
+              <option value="cümə">Cümə</option>
+              <option value="şənbə">Şənbə</option>
+              <option value="bazar">Bazar</option>
+            </select>
           </div>
 
           <!-- Submit düyməsi -->
@@ -177,7 +215,9 @@ const showError = ref(false);
 const formData = reactive({
   name: "",
   gender: "",
+  role: "könüllü", // Default dəyər
   period: "",
+  rest: "", // İstirahət günü
 });
 
 // Növbə məlumatları
@@ -222,7 +262,9 @@ const addVolunteer = async () => {
     const response = await axios.post("http://localhost:4000/api/volunteers", {
       name: formData.name,
       gender: formData.gender,
+      role: formData.role,
       period: formData.period,
+      rest: formData.rest || undefined, // Boş olarsa undefined göndər
     });
 
     // Uğurlu əməliyyat
@@ -232,7 +274,9 @@ const addVolunteer = async () => {
     // Formu təmizlə
     formData.name = "";
     formData.gender = "";
+    formData.role = "könüllü";
     formData.period = "";
+    formData.rest = "";
 
     // Uğur mesajını göstər
     showSuccess.value = true;
