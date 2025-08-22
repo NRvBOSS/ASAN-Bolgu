@@ -184,7 +184,7 @@
                 </div>
               </div>
 
-              <div class="flex items-center justify-between">
+              <div class="flex items-center justify-between mb-4">
                 <span
                   class="text-sm text-gray-500 bg-gray-100/70 px-3 py-1.5 rounded-lg"
                 >
@@ -193,6 +193,22 @@
                 <span class="text-2xl">{{
                   getPeriodEmoji(volunteer.period)
                 }}</span>
+              </div>
+
+              <!-- Silme düymələri -->
+              <div class="flex space-x-3 pt-3 border-t border-gray-100">
+                <button
+                  @click="deleteVolunteer(volunteer._id, 'Xitam')"
+                  class="flex-1 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 text-sm"
+                >
+                  Xitam
+                </button>
+                <button
+                  @click="deleteVolunteer(volunteer._id, 'Məzun')"
+                  class="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 text-sm"
+                >
+                  Məzun
+                </button>
               </div>
             </div>
           </div>
@@ -207,7 +223,7 @@
         <h3 class="text-2xl font-semibold text-gray-800 mb-6 text-center">
           Statistika
         </h3>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-5">
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-5">
           <div
             class="bg-gradient-to-br from-blue-50 to-blue-100/70 p-5 rounded-xl text-center backdrop-blur-sm border border-blue-200/30 shadow-sm"
           >
@@ -234,16 +250,6 @@
             </div>
             <div class="text-sm text-pink-600 font-medium mt-1">Qadın</div>
           </div>
-          <div
-            class="bg-gradient-to-br from-purple-50 to-purple-100/70 p-5 rounded-xl text-center backdrop-blur-sm border border-purple-200/30 shadow-sm"
-          >
-            <div class="text-3xl font-bold text-purple-700">
-              {{ restDaySelectedCount }}
-            </div>
-            <div class="text-sm text-purple-600 font-medium mt-1">
-              İstirahət günü seçib
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -252,6 +258,7 @@
 
 <script setup>
 import { defineProps, computed } from "vue";
+import axios from "axios";
 
 const props = defineProps({
   volunteers: {
@@ -259,6 +266,8 @@ const props = defineProps({
     default: () => [],
   },
 });
+
+const emit = defineEmits(["volunteer-deleted"]);
 
 // İstirahət günləri
 const restDays = [
@@ -300,6 +309,33 @@ const periods = [
     emoji: "🌙",
   },
 ];
+
+// Könüllü silmə funksiyası
+const deleteVolunteer = async (volunteerId, actionType) => {
+  if (!volunteerId) {
+    console.error("Könüllü ID-si təyin edilməyib");
+    return;
+  }
+
+  if (!confirm(`${actionType} əməliyyatını təsdiqləyirsinizmi?`)) {
+    return;
+  }
+
+  try {
+    const response = await axios.delete(
+      `http://localhost:4000/api/volunteers/${volunteerId}`
+    );
+
+    if (response.status === 200) {
+      alert(`Könüllü ${actionType} edildi`);
+      emit("volunteer-deleted", volunteerId);
+      window.location.reload();
+    }
+  } catch (error) {
+    console.error("Könüllü silinərkən xəta baş verdi:", error);
+    alert("Xəta baş verdi. Yenidən cəhd edin.");
+  }
+};
 
 // Rol dəyərinə görə etiket almaq
 const getRoleLabel = (roleValue) => {

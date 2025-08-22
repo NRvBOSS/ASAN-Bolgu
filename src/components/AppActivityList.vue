@@ -20,10 +20,11 @@
         </svg>
         Günlük Fəaliyyət Cədvəli
       </h2>
-      <div class="flex gap-4">
+      <div class="flex gap-4 mb-8">
+        <!-- Böl düyməsi - Mavi -->
         <button
           @click="fetchAndDistributeVolunteers"
-          class="cursor-pointer flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-5 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+          class="flex items-center justify-center bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-opacity-50"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -42,10 +43,10 @@
           Böl
         </button>
 
+        <!-- Tarixçə düyməsi - Narıncı -->
         <router-link to="/history">
           <button
-            @click="showHistory"
-            class="flex items-center justify-center bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-5 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50"
+            class="flex items-center justify-center bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-orange-400 focus:ring-opacity-50"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -64,11 +65,29 @@
             Tarixçə
           </button>
         </router-link>
-      </div>
-    </div>
 
-    <div>
-      <button @click="saveHistory">Təsdiqlə</button>
+        <!-- Təsdiqlə düyməsi - Yaşıl -->
+        <button
+          @click="saveHistory"
+          class="flex items-center justify-center bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-green-400 focus:ring-opacity-50"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5 mr-2"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+          Təsdiqlə
+        </button>
+      </div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
