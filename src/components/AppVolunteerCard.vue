@@ -157,8 +157,8 @@
               </div>
 
               <!-- İstirahət günü bölməsi -->
-              <div v-if="volunteer.rest" class="mb-4">
-                <div class="flex items-center text-gray-700">
+              <div class="mb-4 p-4 bg-gray-50/50 rounded-lg">
+                <div class="flex items-center text-gray-700 mb-3">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     class="h-5 w-5 mr-3"
@@ -178,9 +178,39 @@
                       d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
                     />
                   </svg>
-                  <span class="text-md font-medium"
-                    >İstirahət: {{ getRestDayLabel(volunteer.rest) }}</span
+                  <span class="text-md font-medium">İstirahət günü:</span>
+                </div>
+
+                <!-- Düymələr qrupu -->
+                <div class="grid grid-cols-2 gap-2">
+                  <button
+                    v-for="day in restDays"
+                    :key="day.value"
+                    @click="updateRestDay(volunteer, day.value)"
+                    :disabled="isButtonDisabled(volunteer.createdAt)"
+                    :class="[
+                      volunteer.rest === day.value
+                        ? volunteer.gender === 'kişi' ||
+                          volunteer.gender === 'male'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-pink-600 text-white'
+                        : 'bg-white/80 text-gray-700 hover:bg-gray-100',
+                      'py-2 px-3 rounded-lg text-sm font-medium transition-all duration-200',
+                      isButtonDisabled(volunteer.createdAt)
+                        ? 'opacity-50 cursor-not-allowed'
+                        : '',
+                    ]"
                   >
+                    {{ day.label }}
+                  </button>
+                </div>
+
+                <!-- Deaktiv mesajı -->
+                <div
+                  v-if="isButtonDisabled(volunteer.createdAt)"
+                  class="text-xs text-gray-500 mt-2 text-center"
+                >
+                  İstirahət günü dəyişikliyi üçün 15 gün gözləməlisiniz
                 </div>
               </div>
 
@@ -280,6 +310,48 @@ const restDays = [
   { value: "bazar", label: "Bazar" },
 ];
 
+// Düymənin deaktiv olub olmamasını yoxlamaq
+const isButtonDisabled = (createdAt) => {
+  if (!createdAt) return false;
+  
+  const createdDate = new Date(createdAt);
+  const currentDate = new Date();
+  const diffTime = Math.abs(currentDate - createdDate);
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  return diffDays < 15;
+};
+
+// İstirahət gününü yeniləmək
+const updateRestDay = async (volunteer, newRestDay) => {
+  if (isButtonDisabled(volunteer.createdAt)) {
+    alert("İstirahət gününü dəyişmək üçün ən azı 15 gün gözləməlisiniz");
+    return;
+  }
+  
+  if (volunteer.rest === newRestDay) {
+    return; // Eyni gün seçilibsə, heç nə etmə
+  }
+
+  try {
+    const response = await axios.put(
+      `http://localhost:4000/api/volunteers/${volunteer._id}`,
+      { rest: newRestDay }
+    );
+
+    if (response.status === 200) {
+      // Uğurlu yeniləndikdə
+      emit("volunteer-updated", {
+        id: volunteer._id,
+        updates: { rest: newRestDay }
+      });
+    }
+  } catch (error) {
+    console.error("İstirahət günü yenilənərkən xəta baş verdi:", error);
+    alert("Xəta baş verdi. Yenidən cəhd edin.");
+  }
+};
+
 // Rollar
 const roles = [
   { value: "könüllü", label: "Könüllü" },
@@ -294,19 +366,16 @@ const periods = [
     value: "1",
     label: "1-ci Növbə",
     time: "09:00-13:00",
-    emoji: "🌅",
   },
   {
     value: "2",
     label: "2-ci Növbə",
     time: "11:00-15:00",
-    emoji: "🌆",
   },
   {
     value: "3",
     label: "3-cü Növbə",
     time: "13:00-18:00",
-    emoji: "🌙",
   },
 ];
 
