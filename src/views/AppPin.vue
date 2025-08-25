@@ -1,28 +1,50 @@
+<script setup>
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import axios from "axios";
+
+const router = useRouter();
+const finCode = ref("");
+const errorMessage = ref("");
+
+// PIN göndərmək
+const submitPin = async () => {
+  errorMessage.value = "";
+
+  if (!finCode.value) {
+    errorMessage.value = "FIN kodu tələb olunur";
+    return;
+  }
+
+  try {
+    const response = await axios.post("http://localhost:4000/api/users/pin", {
+      pin: finCode.value, // serverdə necə gözləyirsə o adda göndər
+    });
+
+    // Əgər uğurlu cavab gəlibsə admin-ə yönləndir
+    if (response.status === 200) {
+      router.push("/admin");
+    }
+  } catch (error) {
+    // Əgər cavabda error gəlibsə
+    errorMessage.value =
+      error.response?.data?.error || "FIN kodu yanlışdır";
+  }
+};
+</script>
+
 <template>
-  <div
-    class="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4"
-  >
-    <div class="w-full max-w-md bg-white p-8 rounded-xl shadow-sm space-y-10">
-      <h1 class="text-2xl font-bold text-center text-gray-800">
-        Fin kodunuzu daxil edin
-      </h1>
+  <div>
+    <input
+      v-model="finCode"
+      type="text"
+      placeholder="FIN kodu daxil edin"
+      class="border p-2 rounded"
+    />
+    <button @click="submitPin" class="ml-2 bg-blue-500 text-white px-4 py-2 rounded">
+      Yoxla
+    </button>
 
-      <div class="space-y-10">
-        <input
-          type="text"
-          id="finCode"
-          name="finCode"
-          placeholder="7R4P9L2"
-          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-        />
-      </div>
-
-      <router-link
-        to="/admin"
-        class="block w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg text-center transition-colors duration-200"
-      >
-        Admin səhifəsinə keçid
-      </router-link>
-    </div>
+    <p v-if="errorMessage" class="text-red-500 mt-2">{{ errorMessage }}</p>
   </div>
 </template>

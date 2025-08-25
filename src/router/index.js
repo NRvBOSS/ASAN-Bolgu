@@ -40,4 +40,20 @@ const router = createRouter({
   ],
 });
 
+// router.beforeEach((to, from, next) => {
+//   const token = localStorage.getItem("token");
+
+//   // login tələb edən route-lar
+//   if (to.meta.requiresAuth && !token) {
+//     return next("/login");
+//   }
+
+//   // əgər token varsa və /login-ə getmək istəyirsə → dashboard-a qaytar
+//   if (to.path === "/login" && token) {
+//     return next("/");
+//   }
+
+//   next();
+// });
+
 export default router;
